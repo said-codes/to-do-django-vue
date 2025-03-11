@@ -132,3 +132,19 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
 CORS_ALLOW_ALL_ORIGINS = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Tiempo de vida del token de acceso
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),  # Tiempo de vida del refresh token
+    'ROTATE_REFRESH_TOKENS': True,  # Genera un nuevo refresh token al renovar
+    'BLACKLIST_AFTER_ROTATION': True,  # Invalida el refresh token anterior
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}

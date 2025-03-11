@@ -1,80 +1,108 @@
 <template>
-    <nav class="navbar" v-if="isAuthenticated">  <!-- Solo se muestra si el usuario está autenticado -->
-      <div class="navbar-brand">
-        <span class="username">{{ username }}</span>
+  <nav class="navbar" v-if="isAuthenticated">
+    <div class="navbar-brand">
+      <div class="dropdown" @click="toggleDropdown">
+        <button class="dropdown-toggle">
+          {{ username || 'Usuario' }}
+        </button>
+        <div :class="['dropdown-menu', { 'active': isDropdownOpen }]">
+          <button @click.stop="logout" class="dropdown-item">Cerrar sesión</button>
+        </div>
       </div>
-      <div class="navbar-actions">
-        <button @click="logout" class="logout-button">Cerrar sesión</button>
-      </div>
-    </nav>
-  </template>
+    </div>
+  </nav>
+</template>
 
-  <script>
-  import { useStore } from 'vuex';
-  import { computed } from 'vue';
-  import { useRouter } from 'vue-router';
+<script>
+import { useStore } from 'vuex';
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-  export default {
-    name: 'NavBar',
-    setup() {
-      const store = useStore();
-      const router = useRouter();
+export default {
+  name: 'NavBar',
+  setup() {
+    const store = useStore();
+    const router = useRouter();
+    const isDropdownOpen = ref(false);
 
-      // Obtiene el nombre del usuario desde el estado global de Vuex
-      const username = computed(() => store.state.auth.user?.username);
+    const username = computed(() => store.getters['auth/currentUser']?.username || 'Usuario');
+    const isAuthenticated = computed(() => store.getters['auth/isAuthenticated']);
 
-      // Obtiene el estado de autenticación desde el store
-      const isAuthenticated = computed(() => store.getters['auth/isAuthenticated']);
+    const toggleDropdown = () => {
+      isDropdownOpen.value = !isDropdownOpen.value;
+    };
 
-      // Lógica para cerrar sesión
-      const logout = () => {
-        console.log('Cerrando sesión...');  // Log de depuración
-        store.dispatch('auth/logout').then(() => {
-          router.push('/login').then(() => {
-            console.log('Redirigiendo a /login...');  // Log de depuración
-          }).catch(error => {
-            console.error('Error al redirigir:', error);  // Log de error
-          });
-        }).catch(error => {
-          console.error('Error al cerrar sesión:', error);  // Log de error
-        });
-      };
+    const logout = () => {
+      store.dispatch('auth/logout').then(() => {
+        router.push('/login');
+      }).catch(error => {
+        console.error('Error al cerrar sesión:', error);
+      });
+    };
 
-      return {
-        username,
-        isAuthenticated,
-        logout
-      };
-    }
-  };
-  </script>
-
-  <style scoped>
-  /* Estilos del componente */
-  .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #ddd;
+    return {
+      username,
+      isAuthenticated,
+      logout,
+      isDropdownOpen,
+      toggleDropdown
+    };
   }
+};
+</script>
 
-  .navbar-brand .username {
-    font-size: 18px;
-    font-weight: bold;
-  }
+<style scoped>
+.navbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+}
 
-  .logout-button {
-    padding: 5px 10px;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
+.dropdown {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
 
-  .logout-button:hover {
-    background-color: #c82333;
-  }
-  </style>
+.dropdown-toggle {
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 50px;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 20px;
+  top: 100%;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
+  z-index: 1000;
+}
+
+.dropdown-menu.active {
+  display: block;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 10px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: #f1f1f1;
+}
+</style>

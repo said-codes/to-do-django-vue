@@ -24,7 +24,9 @@
           :class="{ active: selectedCategory === category.id }"
         >
           <span>{{ category.name }}</span>
-          <button class="add-btn" @click.stop="deleteCategory(category.id)">×</button>
+          <button class="add-btn" @click.stop="deleteCategory(category.id)">
+            ×
+          </button>
         </div>
       </div>
     </div>
@@ -41,17 +43,17 @@
       <div class="sidebar-content">
         <div class="form-group">
           <label>Título de la tarea</label>
-          <input
-            type="text"
-            class="form-input"
-            v-model="selectedTask.task"
-          >
+          <input type="text" class="form-input" v-model="selectedTask.task" />
         </div>
 
         <div class="form-group">
           <label>Categoría</label>
           <select v-model="selectedTask.category" class="form-input">
-            <option v-for="category in categories" :key="category.id" :value="category.id">
+            <option
+              v-for="category in categories"
+              :key="category.id"
+              :value="category.id"
+            >
               {{ category.name }}
             </option>
           </select>
@@ -65,8 +67,8 @@
               :key="status"
               class="status-btn"
               :class="{
-                'active': selectedTask.status === status,
-                [status.toLowerCase().replace(' ', '-')]: true
+                active: selectedTask.status === status,
+                [status.toLowerCase().replace(' ', '-')]: true,
               }"
               @click="updateStatus(status)"
             >
@@ -76,12 +78,8 @@
         </div>
 
         <div class="action-buttons">
-          <button class="save-btn" @click="saveChanges">
-            Guardar cambios
-          </button>
-          <button class="cancel-btn" @click="closeEdit">
-            Cancelar
-          </button>
+          <button class="save-btn" @click="saveChanges">Guardar cambios</button>
+          <button class="cancel-btn" @click="closeEdit">Cancelar</button>
         </div>
       </div>
     </div>
@@ -98,9 +96,7 @@
             v-model="TaskText"
             @keyup.enter="AddTask"
           />
-          <button class="add-task-btn" @click="AddTask">
-            Agregar
-          </button>
+          <button class="add-task-btn" @click="AddTask">Agregar</button>
         </div>
       </div>
 
@@ -122,10 +118,7 @@
               {{ task.task }}
             </span>
 
-            <div
-              class="status-pill"
-              :class="statusClass(task.status)"
-            >
+            <div class="status-pill" :class="statusClass(task.status)">
               {{ task.status }}
             </div>
           </div>
@@ -145,6 +138,7 @@
 </template>
 
 <script>
+import api from '@/services/axios';
 import axios from 'axios';
 export default {
   name: 'MicrosoftTodoClone',
@@ -155,37 +149,38 @@ export default {
       apidata: [],
       editedtask: null,
       avilablestatus: ['To Do', 'In Progress', 'Done'],
-      categories: [], // Lista de categorías
-      selectedCategory: null, // Categoría seleccionada
-      newCategoryName: '', // Nombre de la nueva categoría
+      categories: [],
+      selectedCategory: null,
+      newCategoryName: '',
     };
   },
   computed: {
-    // Filtrar tareas por categoría seleccionada
+    // Filtra las tareas según la categoría seleccionada
     filteredTasks() {
       if (this.selectedCategory) {
-        return this.apidata.filter(task => task.category === this.selectedCategory);
+        return this.apidata.filter(
+          (task) => task.category === this.selectedCategory
+        );
       }
       return this.apidata;
-    }
+    },
   },
   methods: {
-      // Obtener categorías desde el backend
-      async fetchCategories() {
+    // Obtiene las categorías desde el backend
+    async fetchCategories() {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/categories/');
+        const response = await api.get('/categories/');
         this.categories = response.data;
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
     },
-
-    // Añadir una nueva categoría
+    // Añade una nueva categoría
     async addCategory() {
       if (!this.newCategoryName) return;
       try {
-        const response = await axios.post('http://127.0.0.1:8000/categories/', {
-          name: this.newCategoryName
+        const response = await api.post('/categories/', {
+          name: this.newCategoryName,
         });
         this.categories.push(response.data);
         this.newCategoryName = '';
@@ -193,53 +188,53 @@ export default {
         console.error('Error adding category:', error);
       }
     },
-
-    // Eliminar una categoría
+    // Elimina una categoría
     async deleteCategory(categoryId) {
       try {
-        await axios.delete(`http://127.0.0.1:8000/categories/${categoryId}/`);
-        this.categories = this.categories.filter(cat => cat.id !== categoryId);
+        await api.delete(`/categories/${categoryId}/`);
+        this.categories = this.categories.filter(
+          (cat) => cat.id !== categoryId
+        );
         if (this.selectedCategory === categoryId) {
-          this.selectedCategory = null; // Deseleccionar si se elimina la categoría activa
+          this.selectedCategory = null;
         }
       } catch (error) {
         console.error('Error deleting category:', error);
       }
     },
-
-    // Filtrar tareas por categoría
+    // Filtra las tareas por categoría
     filterTasksByCategory(categoryId) {
       this.selectedCategory = categoryId;
+      this.listapitasks();
     },
-
+    // Prepara la edición de una tarea
     edit(taskId) {
-      this.selectedTask = { ...this.apidata.find(task => task.id === taskId) };
-      this.TaskText = ''; // Limpiar input principal
-      this.editedtask = null; // Resetear edición en input principal
+      this.selectedTask = {
+        ...this.apidata.find((task) => task.id === taskId),
+      };
+      this.TaskText = '';
+      this.editedtask = null;
     },
-
+    // Guarda los cambios de edición
     async saveChanges() {
-  try {
-    await axios.put(`http://127.0.0.1:8000/editTask/${this.selectedTask.id}`, {
-      task: this.selectedTask.task,
-      status: this.selectedTask.status,
-      category: this.selectedTask.category // Añadir categoría
-    });
-    this.listapitasks();
-    this.closeEdit();
-  } catch (error) {
-    console.error('Error saving changes:', error);
-  }
-},
-
+      try {
+        await api.put(`/editTask/${this.selectedTask.id}`, {
+          task: this.selectedTask.task,
+          status: this.selectedTask.status,
+          category: this.selectedTask.category,
+        });
+        this.listapitasks();
+        this.closeEdit();
+      } catch (error) {
+        console.error('Error saving changes:', error);
+      }
+    },
     updateStatus(newStatus) {
       this.selectedTask.status = newStatus;
     },
-
     closeEdit() {
       this.selectedTask = null;
     },
-
     statusClass(status) {
       return {
         'To-Do': status === 'To Do',
@@ -247,52 +242,52 @@ export default {
         Done: status === 'Done',
       };
     },
-
+    // Lista las tareas desde el backend
     async listapitasks() {
-  try {
-    const params = this.selectedCategory
-      ? { category: this.selectedCategory }
-      : {};
-
-    const response = await axios.get('http://127.0.0.1:8000/tasks/', {
-      params: params
-    });
-    this.apidata = response.data;
-  } catch (error) {
-    console.error('Error fetching tasks:', error);
-  }
-},
+      try {
+        const params = this.selectedCategory
+          ? { category: this.selectedCategory }
+          : {};
+        const response = await api.get('/tasks/', { params });
+        this.apidata = response.data;
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    },
+    // Crea una nueva tarea
     async AddTask() {
-  if (!this.TaskText) return;
-  try {
-    await axios.post('http://127.0.0.1:8000/create/', {
-      task: this.TaskText,
-      status: 'To Do',
-      category: this.selectedCategory // Añadir categoría seleccionada
-    });
-    this.listapitasks();
-    this.TaskText = '';
-  } catch (error) {
-    console.error('Error creating task:', error);
-  }
-},
 
+      if (!this.TaskText) return;
+      try {
+        await api.post('/create/', {
+          task: this.TaskText,
+          status: 'To Do',
+          category: this.selectedCategory,
+        });
+        this.listapitasks();
+        this.TaskText = '';
+      } catch (error) {
+        console.error('Error creating task:', error);
+        console.log(error.response.data);
+      }
+    },
+    // Elimina una tarea
     async deleteTask(id) {
       try {
-        await axios.delete(`http://127.0.0.1:8000/editTask/${id}`);
+        await api.delete(`/editTask/${id}`);
         this.listapitasks();
       } catch (error) {
         console.error('Error deleting task:', error);
       }
     },
-
+    // Cambia el estado de la tarea cíclicamente
     async changestatus(id) {
       const task = this.apidata.find((task) => task.id === id);
       if (!task) return;
       const currentIndex = this.avilablestatus.indexOf(task.status);
       const newIndex = (currentIndex + 1) % this.avilablestatus.length;
       try {
-        await axios.patch(`http://127.0.0.1:8000/editTask/${id}`, {
+        await api.patch(`/editTask/${id}`, {
           status: this.avilablestatus[newIndex],
         });
         this.listapitasks();
@@ -300,22 +295,21 @@ export default {
         console.error('Error updating status:', error);
       }
     },
-
+    // Marca la tarea como completada
     async done(id) {
       try {
-        await axios.patch(`http://127.0.0.1:8000/editTask/${id}`, {
-          status: 'Done'
+        await api.patch(`/editTask/${id}`, {
+          status: 'Done',
         });
         this.listapitasks();
       } catch (error) {
         console.error('Error completing task:', error);
       }
-    }
+    },
   },
   mounted() {
     this.listapitasks();
-    this.fetchCategories(); // Cargar categorías al montar el componente
-
+    this.fetchCategories();
   },
 };
 </script>
@@ -582,30 +576,28 @@ input:focus {
 }
 
 .close-btn {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-size: 1.2rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.2rem;
 }
 
 .sidebar-content {
-    padding: 20px;
+  padding: 20px;
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .form-input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    margin-top: 8px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  margin-top: 8px;
 }
-
-
 
 .sidebar-header {
   display: flex;
@@ -647,17 +639,17 @@ input:focus {
 }
 
 .status-btn.to-do {
-  background: #EFF6FC;
+  background: #eff6fc;
   color: var(--primary-color);
 }
 
 .status-btn.in-progress {
-  background: #FFF4CE;
-  color: #8A6F00;
+  background: #fff4ce;
+  color: #8a6f00;
 }
 
 .status-btn.done {
-  background: #DFF6DD;
+  background: #dff6dd;
   color: var(--success);
 }
 
@@ -707,8 +699,6 @@ input:focus {
   margin-right: 400px;
   transition: margin 0.3s ease;
 }
-
-
 
 .add-category {
   display: flex;

@@ -11,11 +11,13 @@
       />
       <button type="submit">Login</button>
     </form>
+    <button class="register-button" @click="goToRegister">Register</button>
   </div>
 </template>
 
 <script>
 export default {
+  name: 'Login',
   data() {
     return {
       credentials: {
@@ -30,8 +32,12 @@ export default {
         await this.$store.dispatch('auth/login', this.credentials);
         this.$router.push('/');
       } catch (error) {
+        console.error('Error during login:', error);
         alert('Login failed. Please check your credentials.');
       }
+    },
+    goToRegister() {
+      this.$router.push('/register');
     },
   },
 };
@@ -75,5 +81,14 @@ button {
 
 button:hover {
   background-color: #0056b3;
+}
+
+.register-button {
+  margin-top: 10px;
+  background-color: #28a745;
+}
+
+.register-button:hover {
+  background-color: #218838;
 }
 </style>

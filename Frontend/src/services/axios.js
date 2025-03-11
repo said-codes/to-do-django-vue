@@ -1,44 +1,55 @@
-// services/axios.js
 import axios from 'axios';
+import store from '@/store';
 
 const api = axios.create({
   baseURL: 'http://localhost:8000/',
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// Agrega el token a cada petición si está disponible
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
+// Interceptor de respuesta para refrescar el token en caso de 401
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
-    // Si el error es 401 (no autorizado) y no es una solicitud de refresh
-    if (error.response.status === 401 && !originalRequest._retry) {
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !originalRequest._retry
+    ) {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        store.dispatch('auth/logout');
+        return Promise.reject(error);
+      }
       originalRequest._retry = true;
-
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        const response = await axios.post('/token/refresh/', {
+        // Usamos la ruta correcta sin el prefijo "api/"
+        const response = await api.post('token/refresh/', {
           refresh: refreshToken,
         });
-
         localStorage.setItem('accessToken', response.data.access);
         originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
-        return axios(originalRequest);
+        return api(originalRequest);
       } catch (refreshError) {
-        // Si el refresh token falla, cierra la sesión
-        console.error('Failed to refresh token:', refreshError);
-        this.$store.dispatch('auth/logout');
+        console.error(
+          'Failed to refresh token:',
+          refreshError.response ? refreshError.response.data : refreshError
+        );
+        store.dispatch('auth/logout');
         return Promise.reject(refreshError);
       }
     }
-
     return Promise.reject(error);
   }
 );

@@ -4,7 +4,6 @@ from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializer import RegisterSerializer, UserSerializer
 from django.contrib.auth.models import User
-from django.contrib.auth.models import User  # Import the User model
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
