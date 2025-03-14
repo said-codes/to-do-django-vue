@@ -7,12 +7,12 @@
 
   <script >
   import { RouterView } from 'vue-router'
-  import NavBar from './components/NavBar.vue';
+  import Navbar from './components/Navbar.vue';
 
   export default {
   name: 'App',
   components: {
-    NavBar
+    Navbar
   }
 };
   </script>

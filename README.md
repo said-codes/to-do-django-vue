@@ -1,38 +1,86 @@
-# Django-Vue.js ToDo App
+# Django-Vue.js To-Do App
 
-This is a simple ToDo application built using Django for the backend and Vue.js for the frontend.
+Este proyecto es una aplicación de lista de tareas que utiliza Django para el backend y Vue.js para el frontend.
 
-## Features
+## Requisitos previos
 
-- Add tasks with status
-- Edit existing tasks
-- Mark tasks as done
-- Delete tasks
-
-## Technologies Used
-
-- Django
-- Django REST Framework
-- Vue.js
-- Axios
-- SQLite (default database)
-
-## Getting Started
-
-To get a local copy up and running follow these simple steps.
-
-### Prerequisites
-
+Asegúrate de tener instalados los siguientes programas antes de comenzar:
 - Python 3.x
 - Node.js
 - npm (Node Package Manager)
+- Virtualenv (opcional, pero recomendado para el entorno de Python)
 
-### Installation
+## Instalación
 
-1. Clone the repository:
+### 1. Clonar el repositorio
 
-   ```bash
-   git clone https://github.com/AhmedTarek111/ToDo-App-Django-vuejs.git
+```bash
+git clone https://github.com/said-codes/to-do-django-vue.git
+cd to-do-django-vue
+```
 
-### Screen Shot 
-![ToDo App Screenshot](ToDo-screenshot.png)
+### 2. Configurar el backend (Django)
+
+```bash
+cd Backend/src
+```
+
+#### a) Crear y activar un entorno virtual
+
+```bash
+python -m venv env
+source env/bin/activate  # En Windows, usa 'env\Scripts\activate'
+```
+
+#### b) Instalar dependencias
+
+```bash
+pip install -r requirements.txt
+```
+
+#### c) Realizar migraciones y configurar la base de datos
+
+```bash
+python manage.py migrate
+```
+
+#### d) Ejecutar el servidor de Django
+
+```bash
+python manage.py runserver
+```
+
+El servidor estará disponible en `http://127.0.0.1:8000/`.
+
+### 3. Configurar el frontend (Vue.js)
+
+En una nueva terminal:
+
+```bash
+cd ../../Frontend
+```
+
+#### a) Instalar dependencias de Vue.js
+
+```bash
+npm install
+```
+
+#### b) Ejecutar el servidor de desarrollo de Vue.js
+
+```bash
+npm run serve
+```
+
+El servidor de Vue.js estará disponible en `http://localhost:8080/`.
+
+## Notas adicionales
+
+- Asegúrate de que tanto Django como Vue.js estén ejecutándose simultáneamente.
+- Si encuentras problemas con CORS, instala y configura `django-cors-headers` en el backend.
+- Para despliegue en producción, se recomienda compilar Vue.js y servir los archivos estáticos desde Django.
+
+## Autor
+
+Proyecto desarrollado por [said-codes](https://github.com/said-codes).
+
